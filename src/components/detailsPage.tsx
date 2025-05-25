@@ -5,7 +5,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { Star, Heart, Loader2, PlayCircle, ChevronLeft } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-const moviedb = new MovieDb(import.meta.env.VITE_TMDB_API_KEY || "73628ed5a3ca37355ba6d16fdb8b4a23");
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY; 
+const moviedb = new MovieDb(TMDB_API_KEY);
+
 
 interface UserMovie {
   tmdbId: number;
@@ -13,7 +15,7 @@ interface UserMovie {
   favorite?: boolean;
   media_type: 'movie' | 'tv';
   _id?: string;
-  error?: string; // Adicionado para lidar com respostas de erro do backend
+  error?: string; 
 }
 
 interface CastMember {
@@ -55,7 +57,10 @@ type TmdbDetail = (Omit<MovieResponse, 'media_type'> | Omit<ShowResponse, 'media
 };
 
 function DetailsPage() {
-  const { mediaType, tmdbId: tmdbIdParam } = useParams<{ mediaType: 'movie' | 'tv'; tmdbId: string }>();
+  const { media_type, id: tmdbIdFromParams } = useParams<{ media_type: 'movie' | 'tv'; id: string }>();
+  const mediaType = media_type;
+  const tmdbIdParam = tmdbIdFromParams;
+
   const { isAuthenticated, token } = useAuth();
   const navigate = useNavigate();
   const [details, setDetails] = useState<TmdbDetail | null>(null);
@@ -71,6 +76,7 @@ function DetailsPage() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [ratingFeedback, setRatingFeedback] = useState<string | null>(null);
 
+
   useEffect(() => {
     if (!tmdbIdParam || !mediaType) {
       setError("ID do filme/série ou tipo de mídia não fornecido.");
@@ -79,6 +85,11 @@ function DetailsPage() {
     }
     if (mediaType !== 'movie' && mediaType !== 'tv') {
         setError("Tipo de mídia inválido.");
+        setIsLoading(false);
+        return;
+    }
+    if (!TMDB_API_KEY) {
+        setError("Chave da API TMDB não configurada.");
         setIsLoading(false);
         return;
     }
@@ -168,7 +179,7 @@ function DetailsPage() {
         return;
     }
     setFavoriteLoading(true);
-    setError(null); // Limpar erro anterior
+    setError(null); 
     try {
       const newFavoriteStatus = !isFavorite;
       const backendResponse = await fetch(`${API_BASE_URL}/api/user/movies`, {
@@ -180,7 +191,7 @@ function DetailsPage() {
         body: JSON.stringify({
           tmdbId: details.id,
           favorite: newFavoriteStatus,
-          media_type: mediaType
+          media_type: mediaType 
         }),
       });
       
@@ -222,7 +233,7 @@ function DetailsPage() {
     
     setRatingLoading(true);
     setRatingFeedback(null);
-    setError(null); // Limpar erro anterior
+    setError(null); 
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/user/movies`, {
@@ -234,7 +245,7 @@ function DetailsPage() {
         body: JSON.stringify({
           tmdbId: details.id,
           rating: ratingToSubmit,
-          media_type: mediaType
+          media_type: mediaType 
         }),
       });
       
@@ -293,7 +304,7 @@ function DetailsPage() {
     );
   }
 
-  if (error && !details) { // Mostrar erro principal apenas se não houver detalhes
+  if (error && !details) { 
     return <div className="text-center text-red-500 pt-28 text-xl bg-[#1E1A1A] min-h-screen">{error}</div>;
   }
 
@@ -343,7 +354,7 @@ function DetailsPage() {
             </span>
           </div>
           <p className="text-gray-300 text-xs md:text-sm mb-4 line-clamp-3 md:line-clamp-4">{details.overview || "Sinopse não disponível."}</p>
-          {error && <p className="text-red-400 text-sm mb-2">{error}</p>} {/* Mostrar erro de API aqui */}
+          {error && <p className="text-red-400 text-sm mb-2">{error}</p>}
           <div className="flex flex-wrap gap-3 items-center">
             <button 
               onClick={openTrailer}

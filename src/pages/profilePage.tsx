@@ -6,8 +6,8 @@ import MovieCard from '../components/movieListComponents/movieCard';
 import { MovieResult, TvResult, MovieDb, MovieResponse, ShowResponse } from "moviedb-promise";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-
-const moviedb = new MovieDb("73628ed5a3ca37355ba6d16fdb8b4a23");
+const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const moviedb = new MovieDb(TMDB_API_KEY);
 
 
 interface UserProfileData {
@@ -49,6 +49,10 @@ function ProfilePage() {
   };
 
   useEffect(() => {
+    if (!TMDB_API_KEY) {
+        console.error("Chave da API TMDB não configurada para buscar gêneros.");
+        return;
+    }
     const fetchGenres = async () => {
       try {
         const [movieGenresRes, tvGenresRes] = await Promise.all([
@@ -80,6 +84,14 @@ function ProfilePage() {
 
     const fetchProfileAndFavorites = async () => {
       if (!token) return;
+      if (!TMDB_API_KEY && favoriteMoviesDetails.length > 0) { // Verifica se precisa da chave para buscar detalhes
+        console.error("Chave da API TMDB não configurada para buscar detalhes dos favoritos.");
+        setErrorLoadingProfile("Erro de configuração da API.");
+        setIsLoadingProfile(false);
+        setIsLoadingFavorites(false);
+        return;
+      }
+
 
       setIsLoadingProfile(true);
       setIsLoadingFavorites(true);
@@ -161,7 +173,7 @@ function ProfilePage() {
     };
 
     fetchProfileAndFavorites();
-  }, [isAuthenticated, token, navigate, authLoading]);
+  }, [isAuthenticated, token, navigate, authLoading, favoriteMoviesDetails.length]); // Adicionado favoriteMoviesDetails.length para re-trigger se mudar
 
   if (authLoading || isLoadingProfile) {
     return (
