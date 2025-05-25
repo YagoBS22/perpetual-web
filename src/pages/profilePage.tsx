@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Film, Mail, UserCircle, CalendarDays, Loader2 } from 'lucide-react';
@@ -7,7 +7,7 @@ import { MovieResult, TvResult, MovieDb, MovieResponse, ShowResponse } from "mov
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-const moviedb = new MovieDb("73628ed5a3ca37355ba6d16fdb8b4a23"); //
+const moviedb = new MovieDb("73628ed5a3ca37355ba6d16fdb8b4a23");
 
 
 interface UserProfileData {
